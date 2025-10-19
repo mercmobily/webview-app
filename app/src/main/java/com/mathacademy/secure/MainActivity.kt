@@ -250,7 +250,7 @@ private fun isAllowedUrl(url: String, allowedDomain: String): Boolean {
     return try {
         val host = java.net.URL(url).host.lowercase()
         host == allowedDomain || host.endsWith(".$allowedDomain")
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
