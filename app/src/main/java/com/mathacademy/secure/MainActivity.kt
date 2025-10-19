@@ -3,9 +3,9 @@ package com.mathacademy.secure
 import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.webkit.DownloadListener
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -14,21 +14,36 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+
+// Site configuration data class
+data class Site(
+    val name: String,
+    val domain: String,
+    val startUrl: String
+)
 
 class MainActivity : ComponentActivity() {
 
-    private val ALLOWED_DOMAIN = "mathacademy.com"
-    private val START_URL = "https://www.mathacademy.com/"
+    // Available sites list - can be expanded in the future
+    private val availableSites = listOf(
+        Site(
+            name = "Math Academy",
+            domain = "mathacademy.com",
+            startUrl = "https://www.mathacademy.com/"
+        )
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,21 +55,79 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+            var selectedSite by remember { mutableStateOf<Site?>(null) }
+
             MathAcademyTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SecureWebView(
-                        url = START_URL,
-                        allowedDomain = ALLOWED_DOMAIN,
-                        onBlockedUrl = {
-                            Toast.makeText(
-                                this,
-                                "Access restricted to Math Academy only",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
+                    if (selectedSite == null) {
+                        SiteSelector(
+                            sites = availableSites,
+                            onSiteSelected = { site ->
+                                selectedSite = site
+                            }
+                        )
+                    } else {
+                        SecureWebView(
+                            url = selectedSite!!.startUrl,
+                            allowedDomain = selectedSite!!.domain,
+                            onBlockedUrl = {
+                                Toast.makeText(
+                                    this,
+                                    "Access restricted to ${selectedSite!!.name} only",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SiteSelector(
+    sites: List<Site>,
+    onSiteSelected: (Site) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Select a Site",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 32.dp)
+        )
+
+        sites.forEach { site ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .clickable { onSiteSelected(site) },
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Text(
+                        text = site.name,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        text = site.domain,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
                     )
                 }
             }
@@ -116,9 +189,9 @@ fun SecureWebView(
                 }
 
                 // Block downloads - prevent escaping to other apps
-                setDownloadListener(DownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                setDownloadListener { _, _, _, _, _ ->
                     onBlockedUrl()
-                })
+                }
 
                 // Set custom WebViewClient to control navigation
                 webViewClient = object : WebViewClient() {
@@ -127,11 +200,23 @@ fun SecureWebView(
                         request: WebResourceRequest?
                     ): Boolean {
                         val requestUrl = request?.url.toString()
+                        val scheme = request?.url?.scheme?.lowercase()
 
-                        // Only filter top-level (main frame) navigations
-                        // Allow iframes/subframes to load (e.g., embedded content)
+                        // Block external intent schemes (mailto, tel, sms, etc.)
+                        if (scheme != null && scheme !in listOf("http", "https")) {
+                            Log.w("SecureWebView", "Blocked external intent: $scheme")
+                            Toast.makeText(
+                                context,
+                                "External links are not allowed",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return true  // Block navigation
+                        }
+
+                        // Only filter top-level (main frame) navigation
+                        // Allow iframes/sub-frame to load (e.g., embedded content)
                         if (request?.isForMainFrame != true) {
-                            return false  // Allow subframe navigations
+                            return false  // Allow sub-frame navigation
                         }
 
                         // Check if URL belongs to allowed domain
