@@ -203,6 +203,12 @@ fun SecureWebView(
                         android.R.color.holo_red_light
                     )
 
+                    // Require longer pull distance before triggering refresh
+                    // Default is 64dp, we're increasing to 120dp (almost twice as far)
+                    setDistanceToTriggerSync(
+                        (120 * context.resources.displayMetrics.density).toInt()
+                    )
+
                     // Store reference to the SwipeRefreshLayout for scroll listener
                     val swipeRefreshLayout = this
 
