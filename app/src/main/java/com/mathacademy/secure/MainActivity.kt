@@ -151,15 +151,17 @@ fun SecureWebView(
     onBlockedUrl: () -> Unit
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Handle back button to navigate within WebView
     BackHandler(enabled = webView?.canGoBack() == true) {
         webView?.goBack()
     }
 
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { context ->
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { context ->
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -228,8 +230,14 @@ fun SecureWebView(
                         }
                     }
 
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                        super.onPageStarted(view, url, favicon)
+                        isLoading = true
+                    }
+
                     override fun onPageFinished(view: WebView?, url: String?) {
                         super.onPageFinished(view, url)
+                        isLoading = false
                         // Disable long-press to prevent URL copying
                         view?.isLongClickable = false
                         view?.setOnLongClickListener { true }
@@ -242,8 +250,15 @@ fun SecureWebView(
                 // Store reference for back button handling
                 webView = this
             }
+        })
+
+        // Loading indicator
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
-    )
+    }
 }
 
 private fun isAllowedUrl(url: String, allowedDomain: String): Boolean {
