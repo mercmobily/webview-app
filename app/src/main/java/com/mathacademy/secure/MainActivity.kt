@@ -21,11 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 // Site configuration data class
 data class Site(
@@ -152,6 +155,9 @@ fun SecureWebView(
 ) {
     var webView by remember { mutableStateOf<WebView?>(null) }
     var isLoading by remember { mutableStateOf(true) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val isConnected = rememberConnectivityState()
+    val scope = rememberCoroutineScope()
 
     // Handle back button to navigate within WebView
     BackHandler(enabled = webView?.canGoBack() == true) {
@@ -253,10 +259,58 @@ fun SecureWebView(
         })
 
         // Loading indicator
-        if (isLoading) {
+        if (isLoading && !isRefreshing) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center)
             )
+        }
+
+        // Offline indicator - compact banner at very top
+        if (!isConnected) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter),
+                color = MaterialTheme.colorScheme.errorContainer,
+                tonalElevation = 2.dp
+            ) {
+                Text(
+                    text = "No internet connection",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+
+        // Reload button - always visible in bottom right corner
+        FloatingActionButton(
+            onClick = {
+                scope.launch {
+                    isRefreshing = true
+                    webView?.reload()
+                    delay(500)
+                    isRefreshing = false
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            if (isRefreshing) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    text = "↻",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
         }
     }
 }
