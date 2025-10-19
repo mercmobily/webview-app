@@ -1,4 +1,4 @@
-com.mathacademy.secure.test.app-androidTest-0 /home/merc/Development/current/mathacc2/MathAcademyApp/app/build/generated/res/resValues/androidTest/debug
-com.mathacademy.secure.test.app-mergeDebugAndroidTestResources-1 /home/merc/Development/current/mathacc2/MathAcademyApp/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
-com.mathacademy.secure.test.app-mergeDebugAndroidTestResources-2 /home/merc/Development/current/mathacc2/MathAcademyApp/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
-com.mathacademy.secure.test.app-debugAndroidTest-3 /home/merc/Development/current/mathacc2/MathAcademyApp/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources
+com.mathacademy.secure.test.app-androidTest-0 /home/merc/Development/maintained/MathAcademyApp/app/build/generated/res/resValues/androidTest/debug
+com.mathacademy.secure.test.app-mergeDebugAndroidTestResources-1 /home/merc/Development/maintained/MathAcademyApp/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
+com.mathacademy.secure.test.app-mergeDebugAndroidTestResources-2 /home/merc/Development/maintained/MathAcademyApp/app/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
+com.mathacademy.secure.test.app-debugAndroidTest-3 /home/merc/Development/maintained/MathAcademyApp/app/build/intermediates/merged_res/debugAndroidTest/mergeDebugAndroidTestResources
