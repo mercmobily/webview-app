@@ -1,0 +1,16 @@
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not determine the dependencies of task ':app:packageDebug'.
+> Could not create task ':app:compileDebugJavaWithJavac'.
+   > Failed to calculate the value of task ':app:compileDebugJavaWithJavac' property 'javaCompiler'.
+      > Toolchain installation '/usr/lib/jvm/java-21-openjdk-amd64' does not provide the required capabilities: [JAVA_COMPILER]
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4s
